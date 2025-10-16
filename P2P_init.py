@@ -39,3 +39,24 @@ with open('PeerInfo.cfg', 'r') as file: # peerinfo is like a tracker equivalent 
     #how to access: peer_info[1001][0]
 
 #need a main or header file and src file but here is a couple functions
+
+def peerProess(int): #int the peer process id
+    # Initialize peer process
+    if peerID not in peer_info:
+        print(f"Peer ID {peerID} not found in PeerInfo.cfg")
+        sys.exit(1)
+
+    host_name, port_number, has_file = peer_info[peerID]
+    print(f"Starting peer {peerID} at {host_name}:{port_number}, Has file: {has_file}")
+
+    # Create a socket for the peer
+    try:
+        peer_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        peer_socket.bind((host_name, port_number))
+        peer_socket.listen(5)
+        print(f"Peer {peerID} listening on {host_name}:{port_number}")
+    except Exception as e:
+        print(f"Error creating socket for peer {peerID}: {e}")
+        sys.exit(1)
+
+    # Further implementation would go here (e.g., handling connections, file pieces, etc.)
