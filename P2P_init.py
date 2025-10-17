@@ -5,26 +5,31 @@ import os
 import sys
 
 # Global variables
-with open('Common.cfg', 'r') as file:
-    for line in file:
-        if line.startswith('NumberOfPreferredNeighbors'):
-            NUMBER_OF_PREFERRED_NEIGHBORS = int(line.split(' ')[1].strip())
-            print(f"NumberOfPreferredNeighbors: {NUMBER_OF_PREFERRED_NEIGHBORS}")
-        elif line.startswith('UnchokingInterval'):
-            UNCHOKING_INTERVAL = int(line.split(' ')[1].strip())
-            print(f"UnchokingInterval: {UNCHOKING_INTERVAL}")
-        elif line.startswith('OptimisticUnchokingInterval'):
-            OPTIMISTIC_UNCHOKING_INTERVAL = int(line.split(' ')[1].strip())
-            print(f"OptimisticUnchokingInterval: {OPTIMISTIC_UNCHOKING_INTERVAL}") 
-        elif line.startswith('FileName'):  
-            FILE_NAME = line.split(' ')[1].strip()
-            print(f"FileName: {FILE_NAME}")
-        elif line.startswith('FileSize'):
-            FILE_SIZE = int(line.split(' ')[1].strip())
-            print(f"FileSize: {FILE_SIZE}")
-        elif line.startswith('PieceSize'):
-            PIECE_SIZE = int(line.split(' ')[1].strip())
-            print(f"PieceSize: {PIECE_SIZE}")
+global NUMBER_OF_PREFERRED_NEIGHBORS
+global UNCHOKING_INTERVAL
+global OPTIMISTIC_UNCHOKING_INTERVAL
+global FILE_NAME
+global FILE_SIZE
+global PIECE_SIZE
+global Bitfield
+
+
+def init_Common():
+    with open('Common.cfg', 'r') as file:
+        for line in file:
+            if line.startswith('NumberOfPreferredNeighbors'):
+                NUMBER_OF_PREFERRED_NEIGHBORS = int(line.split(' ')[1].strip())
+            elif line.startswith('UnchokingInterval'):
+                UNCHOKING_INTERVAL = int(line.split(' ')[1].strip())
+            elif line.startswith('OptimisticUnchokingInterval'):
+                OPTIMISTIC_UNCHOKING_INTERVAL = int(line.split(' ')[1].strip())
+            elif line.startswith('FileName'):  
+                FILE_NAME = line.split(' ')[1].strip()
+            elif line.startswith('FileSize'):
+                FILE_SIZE = int(line.split(' ')[1].strip())
+            elif line.startswith('PieceSize'):
+                PIECE_SIZE = int(line.split(' ')[1].strip())
+
 
 with open('PeerInfo.cfg', 'r') as file: # peerinfo is like a tracker equivalent in BitTorrent
     peer_info = {}
@@ -40,7 +45,7 @@ with open('PeerInfo.cfg', 'r') as file: # peerinfo is like a tracker equivalent 
 
 #need a main or header file and src file but here is a couple functions
 
-def peerProess(int): #int the peer process id
+def peerProess(peerID): #int the peer process id
     # Initialize peer process
     if peerID not in peer_info:
         print(f"Peer ID {peerID} not found in PeerInfo.cfg")
@@ -54,6 +59,8 @@ def peerProess(int): #int the peer process id
         peer_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         peer_socket.bind((host_name, port_number))
         peer_socket.listen(5)
+        init_Common()
+
         print(f"Peer {peerID} listening on {host_name}:{port_number}")
     except Exception as e:
         print(f"Error creating socket for peer {peerID}: {e}")
