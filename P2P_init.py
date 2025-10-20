@@ -40,15 +40,23 @@ def handshake(peer_id):
     return handshake_msg
 
 
-def actual_mes(length, message_type):
+def actual_mes(length, message_type): #work in progress
     if (message_type < 0 or message_type > 7):
         raise ValueError("Invalid message type")
     elif(message_type == 0, 1, 2, 3): # This is for choke, unchoke, interested, and not interested
         payload = 0
-
+    elif(message_type == 4): #have
+        payload = 4
+    elif(message_type == 5): #This is the bitfield from the file, first thing after handshake
+        payload = 16 # need to figure out the bitfield from the file
+    elif(message_type == 6): #the request field, different than BitTorrent
+        payload = 4 
+    elif(message_type == 7): #the piece field
+        payload = 4
+        #actually the content of the piece
+    
     # Create actual message
-    return 
-    pass  # Implementation would go here
+    return length.to_bytes(4, byteorder='big') + message_type.to_bytes(1,byteorder='big') + payload #may need to fix payload
 
 
 with open('PeerInfo.cfg', 'r') as file: # peerinfo is like a tracker equivalent in BitTorrent
