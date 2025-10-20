@@ -30,6 +30,26 @@ def init_Common():
             elif line.startswith('PieceSize'):
                 PIECE_SIZE = int(line.split(' ')[1].strip())
 
+def handshake(peer_id):
+    # Create handshake message
+    pstr = "P2PFILESHARINGPROJ" #handshake header
+    pstrlen = len(pstr)
+    zero_bits = bytes(10)  # 10 bytes of zero
+    peer_id_bytes = peer_id.to_bytes(4, byteorder='big')
+    handshake_msg = pstr.encode('utf-8') + zero_bits + peer_id_bytes #total of 32 bits
+    return handshake_msg
+
+
+def actual_mes(length, message_type):
+    if (message_type < 0 or message_type > 7):
+        raise ValueError("Invalid message type")
+    elif(message_type == 0, 1, 2, 3): # This is for choke, unchoke, interested, and not interested
+        payload = 0
+
+    # Create actual message
+    return 
+    pass  # Implementation would go here
+
 
 with open('PeerInfo.cfg', 'r') as file: # peerinfo is like a tracker equivalent in BitTorrent
     peer_info = {}
@@ -40,6 +60,7 @@ with open('PeerInfo.cfg', 'r') as file: # peerinfo is like a tracker equivalent 
         port_number = int(parts[2].strip())
         has_file = parts[3].strip() == '1'
         peer_info[peer_id] = (host_name, port_number, has_file)
+        os.makedirs(f'peer_{peer_id}', exist_ok=True) #this makes the directory as long as it has nto been created yet
 
     #how to access: peer_info[1001][0]
 
@@ -52,14 +73,18 @@ def peerProess(peerID): #int the peer process id
         sys.exit(1)
 
     host_name, port_number, has_file = peer_info[peerID]
+    with open("log_peer_{peerID}.log", "w") as log_peer: # will create the log file for the specific peer process
+        log_peer.write("started the peer process\n")
     print(f"Starting peer {peerID} at {host_name}:{port_number}, Has file: {has_file}")
 
     # Create a socket for the peer
     try:
         peer_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         peer_socket.bind((host_name, port_number))
+        log_peer.write("Connected to the host port\n")
         peer_socket.listen(5)
         init_Common()
+        #need to then look at how it will then decide if it needs to connect to the other ports
 
         print(f"Peer {peerID} listening on {host_name}:{port_number}")
     except Exception as e:
@@ -67,3 +92,4 @@ def peerProess(peerID): #int the peer process id
         sys.exit(1)
 
     # Further implementation would go here (e.g., handling connections, file pieces, etc.)
+
