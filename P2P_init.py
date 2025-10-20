@@ -59,16 +59,18 @@ def actual_mes(length, message_type): #work in progress
     return length.to_bytes(4, byteorder='big') + message_type.to_bytes(1,byteorder='big') + payload #may need to fix payload
 
 
-with open('PeerInfo.cfg', 'r') as file: # peerinfo is like a tracker equivalent in BitTorrent
-    peer_info = {}
-    for line in file:
-        parts = line.split(' ')
-        peer_id = int(parts[0].strip())
-        host_name = parts[1].strip()
-        port_number = int(parts[2].strip())
-        has_file = parts[3].strip() == '1'
-        peer_info[peer_id] = (host_name, port_number, has_file)
-        os.makedirs(f'peer_{peer_id}', exist_ok=True) #this makes the directory as long as it has nto been created yet
+def PeerInfo_init():
+
+    with open('PeerInfo.cfg', 'r') as file: # peerinfo is like a tracker equivalent in BitTorrent
+        peer_info = {}
+        for line in file:
+            parts = line.split(' ')
+            peer_id = int(parts[0].strip())
+            host_name = parts[1].strip()
+            port_number = int(parts[2].strip())
+            has_file = parts[3].strip() == '1'
+            peer_info[peer_id] = (host_name, port_number, has_file)
+            os.makedirs(f'peer_{peer_id}', exist_ok=True) #this makes the directory as long as it has nto been created yet
 
     #how to access: peer_info[1001][0]
 
@@ -100,4 +102,9 @@ def peerProess(peerID): #int the peer process id
         sys.exit(1)
 
     # Further implementation would go here (e.g., handling connections, file pieces, etc.)
+
+    if __name__ == "__main__":
+        PeerInfo_init()
+        peerProess(peerID)
+        print(f"made it")
 
