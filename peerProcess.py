@@ -153,6 +153,7 @@ class Bitfield:
 # def get_missing_pieces(self, other_bitfield):
 
 class Peer:
+
     def __init__(self, peer_id):
         self.peer_id = peer_id
         #print(peer_info[peer_id])
@@ -169,7 +170,7 @@ class Peer:
     
     def log(self, message):
         """Write log message with timestamp"""
-        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        timestamp = datetime.now().strftime("%H:%M:%S") # fixed getting only the time
         with open(self.log_file, "a") as f:
             f.write(f"[{timestamp}]: {message}\n")
         print(f"[{timestamp}]: {message}") #makes the time stamp show in console as well
@@ -201,6 +202,7 @@ def peerProcess(peer_id):
     """Main peer process function"""
     global peer_info, NUMBER_OF_PREFERRED_NEIGHBORS, UNCHOKING_INTERVAL
     global OPTIMISTIC_UNCHOKING_INTERVAL, FILE_NAME, FILE_SIZE, PIECE_SIZE
+
     
     # Read configuration directly from Common.cfg
     # with open('Common.cfg', 'r') as file:
@@ -242,6 +244,8 @@ def peerProcess(peer_id):
             time.sleep(1)
     except KeyboardInterrupt:
         peer.log("Peer process terminated")
+        with open(peer.log_file, "w") as f:
+            pass # clears the log file on termination
         server_socket.close()
 
 if __name__ == "__main__":
@@ -251,3 +255,4 @@ if __name__ == "__main__":
     
     peer_id = int(sys.argv[1])
     peerProcess(peer_id)
+    handshake(peer_id) #implementing the handshake function

@@ -94,7 +94,7 @@ def peerProcess(peerID): #int the peer process id
     print(f"Starting peer {peerID} at {host_name}:{port_number}, Has file: {has_file}")
 
     # Create a socket for the peer
-    init_Common
+    init_Common()
 
     # Further implementation would go here (handling connections, file pieces, etc.)
 
