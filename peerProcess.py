@@ -41,6 +41,8 @@ FILE_NAME = ""
 FILE_SIZE = 0
 PIECE_SIZE = 0
 
+# need to call the handshake initiatlizer in the P2P file
+# plan on using the actual mes function from P2P as well 
 def calculate_num_pieces():
     """Calculate number of pieces based on file size and piece size"""
     global NUM_PIECES, FILE_SIZE, PIECE_SIZE
@@ -218,16 +220,9 @@ def peerProcess(peer_id):
     init_Common()
     # Read peer info directly from PeerInfo.cfg
     peer_info.clear()  # Clear any old data
-    # with open('PeerInfo.cfg', 'r') as file:
-    #     for line in file:
-    #         parts = line.split(' ')
-    #         peer_id_cfg = int(parts[0].strip())
-    #         host_name = parts[1].strip()
-    #         port_number = int(parts[2].strip())
-    #         has_file = parts[3].strip() == '1'
-    #         peer_info[peer_id_cfg] = (host_name, port_number, has_file)
-    #         os.makedirs(f'peer_{peer_id_cfg}', exist_ok=True)
-    PeerInfo_init()
+
+
+    PeerInfo_init() # use the function from the P2P file
     # Calculate number of pieces
     #calculate_num_pieces()
     
@@ -250,7 +245,7 @@ def peerProcess(peer_id):
         server_socket.close()
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
+    if len(sys.argv) != 2: #making sure that the command includes exactly the information needed. 
         print("Usage: python peerProcess.py <peer_id>")
         sys.exit(1)
     

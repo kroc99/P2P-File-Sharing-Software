@@ -94,28 +94,14 @@ def peerProcess(peerID): #int the peer process id
     print(f"Starting peer {peerID} at {host_name}:{port_number}, Has file: {has_file}")
 
     # Create a socket for the peer
-    try:
-        peer_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        #print(f'Program started at {time.ctime()}')
-        #how we will access time for the logs and such
-        peer_socket.bind((host_name, port_number))
-        #print(f"made it") error checking ro find the bottleneck
-        log_peer.write("Connected to the host port\n")
-        peer_socket.listen(5)
-        init_Common()
-        #need to then look at how it will then decide if it needs to connect to the other ports
+    init_Common
 
-        print(f"Peer {peerID} listening on {host_name}:{port_number}")
-    except Exception as e:
-        print(f"Error creating socket for peer {peerID}: {e}")
-        sys.exit(1)
-
-    # Further implementation would go here (e.g., handling connections, file pieces, etc.)
+    # Further implementation would go here (handling connections, file pieces, etc.)
 
 
-if __name__ == "__main__":
-    time.ctime()
-    print(f'Program started at {time.ctime()}')
+if __name__ == "__main__": # start us the process
+    time.ctime() #gets the current time - needs to get parsed
+    print(f'Program started at {time.ctime()}') # a check to make sure it is getting the time
     PeerInfo_init()
     peerProcess(1001)
 
