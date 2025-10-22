@@ -82,7 +82,7 @@ def PeerInfo_init():
 
 #need a main or header file and src file but here is a couple functions
 
-def peerProess(peerID): #int the peer process id
+def peerProcess(peerID): #int the peer process id
     # Initialize peer process
     if peerID not in peer_info:
         print(f"Peer ID {peerID} not found in PeerInfo.cfg")
@@ -117,5 +117,5 @@ if __name__ == "__main__":
     time.ctime()
     print(f'Program started at {time.ctime()}')
     PeerInfo_init()
-    peerProess(1001)
+    peerProcess(1001)
 

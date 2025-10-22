@@ -15,3 +15,8 @@ Then creation of:
 - clilent socket - similar to the sample client.java - connects to all peers before it
 - handhake protocol with the 3 parts
 - 
+
+To run the testfile:
+- type "python test_p2p.py" into the terminal in side the root folder
+- use Ctrl+C to terminate process
+- the testing file starts a log file for each peer to show the P2P relationship working
