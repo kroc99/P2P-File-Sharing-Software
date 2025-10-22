@@ -3,6 +3,7 @@ import random
 import socket
 import os
 import sys
+import time
 
 # Global variables
 global NUMBER_OF_PREFERRED_NEIGHBORS
@@ -46,6 +47,7 @@ def actual_mes(length, message_type): #work in progress
     if (message_type < 0 or message_type > 7):
         raise ValueError("Invalid message type")
     elif(message_type == 0, 1, 2, 3): # This is for choke, unchoke, interested, and not interested
+        #how we will access time for the logs and such - time.ctime() for the log
         payload = 0
     elif(message_type == 4): #have
         payload = 4
@@ -94,7 +96,10 @@ def peerProess(peerID): #int the peer process id
     # Create a socket for the peer
     try:
         peer_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        #print(f'Program started at {time.ctime()}')
+        #how we will access time for the logs and such
         peer_socket.bind((host_name, port_number))
+        #print(f"made it") error checking ro find the bottleneck
         log_peer.write("Connected to the host port\n")
         peer_socket.listen(5)
         init_Common()
@@ -109,6 +114,8 @@ def peerProess(peerID): #int the peer process id
 
 
 if __name__ == "__main__":
+    time.ctime()
+    print(f'Program started at {time.ctime()}')
     PeerInfo_init()
     peerProess(1001)
 
