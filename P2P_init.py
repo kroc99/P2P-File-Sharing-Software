@@ -12,10 +12,12 @@ global FILE_NAME
 global FILE_SIZE
 global PIECE_SIZE
 global Bitfield
+peer_info = {}
 
 
 def init_Common():
     with open('Common.cfg', 'r') as file:
+        print(__name__)
         for line in file:
             if line.startswith('NumberOfPreferredNeighbors'):
                 NUMBER_OF_PREFERRED_NEIGHBORS = int(line.split(' ')[1].strip())
@@ -62,14 +64,16 @@ def actual_mes(length, message_type): #work in progress
 def PeerInfo_init():
 
     with open('PeerInfo.cfg', 'r') as file: # peerinfo is like a tracker equivalent in BitTorrent
-        peer_info = {}
+        #peer_info = {}
         for line in file:
             parts = line.split(' ')
             peer_id = int(parts[0].strip())
+            #print(f"Peer ID: {peer_id}") used as a check
             host_name = parts[1].strip()
             port_number = int(parts[2].strip())
             has_file = parts[3].strip() == '1'
             peer_info[peer_id] = (host_name, port_number, has_file)
+            #print(peer_info[1001]) used a check
             os.makedirs(f'peer_{peer_id}', exist_ok=True) #this makes the directory as long as it has nto been created yet
 
     #how to access: peer_info[1001][0]
@@ -83,7 +87,7 @@ def peerProess(peerID): #int the peer process id
         sys.exit(1)
 
     host_name, port_number, has_file = peer_info[peerID]
-    with open("log_peer_{peerID}.log", "w") as log_peer: # will create the log file for the specific peer process
+    with open(f'log_peer_{peerID}.log', "w") as log_peer: # will create the log file for the specific peer process
         log_peer.write("started the peer process\n")
     print(f"Starting peer {peerID} at {host_name}:{port_number}, Has file: {has_file}")
 
@@ -103,8 +107,8 @@ def peerProess(peerID): #int the peer process id
 
     # Further implementation would go here (e.g., handling connections, file pieces, etc.)
 
-    if __name__ == "__main__":
-        PeerInfo_init()
-        peerProess(peerID)
-        print(f"made it")
+
+if __name__ == "__main__":
+    PeerInfo_init()
+    peerProess(1001)
 
