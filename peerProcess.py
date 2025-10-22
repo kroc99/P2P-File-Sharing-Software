@@ -13,6 +13,7 @@ import threading
 import time
 import struct
 from datetime import datetime
+import P2P_init
 
 from P2P_init import (
     init_Common, handshake, actual_mes, PeerInfo_init
@@ -152,7 +153,8 @@ class Bitfield:
 class Peer:
     def __init__(self, peer_id):
         self.peer_id = peer_id
-        self.host_name, self.port_number, self.has_file = peer_info[peer_id]
+        #print(peer_info[peer_id])
+        self.host_name, self.port_number, self.has_file = P2P_init.peer_info[peer_id]
         self.bitfield = Bitfield(NUM_PIECES, self.has_file)
         self.connections = {}  # Active connections
         
@@ -199,35 +201,35 @@ def peerProcess(peer_id):
     global OPTIMISTIC_UNCHOKING_INTERVAL, FILE_NAME, FILE_SIZE, PIECE_SIZE
     
     # Read configuration directly from Common.cfg
-    with open('Common.cfg', 'r') as file:
-        for line in file:
-            if line.startswith('NumberOfPreferredNeighbors'):
-                NUMBER_OF_PREFERRED_NEIGHBORS = int(line.split(' ')[1].strip())
-            elif line.startswith('UnchokingInterval'):
-                UNCHOKING_INTERVAL = int(line.split(' ')[1].strip())
-            elif line.startswith('OptimisticUnchokingInterval'):
-                OPTIMISTIC_UNCHOKING_INTERVAL = int(line.split(' ')[1].strip())
-            elif line.startswith('FileName'):  
-                FILE_NAME = line.split(' ')[1].strip()
-            elif line.startswith('FileSize'):
-                FILE_SIZE = int(line.split(' ')[1].strip())
-            elif line.startswith('PieceSize'):
-                PIECE_SIZE = int(line.split(' ')[1].strip())
-    
+    # with open('Common.cfg', 'r') as file:
+    #     for line in file:
+    #         if line.startswith('NumberOfPreferredNeighbors'):
+    #             NUMBER_OF_PREFERRED_NEIGHBORS = int(line.split(' ')[1].strip())
+    #         elif line.startswith('UnchokingInterval'):
+    #             UNCHOKING_INTERVAL = int(line.split(' ')[1].strip())
+    #         elif line.startswith('OptimisticUnchokingInterval'):
+    #             OPTIMISTIC_UNCHOKING_INTERVAL = int(line.split(' ')[1].strip())
+    #         elif line.startswith('FileName'):  
+    #             FILE_NAME = line.split(' ')[1].strip()
+    #         elif line.startswith('FileSize'):
+    #             FILE_SIZE = int(line.split(' ')[1].strip())
+    #         elif line.startswith('PieceSize'):
+    #             PIECE_SIZE = int(line.split(' ')[1].strip())
+    init_Common()
     # Read peer info directly from PeerInfo.cfg
     peer_info.clear()  # Clear any old data
-    with open('PeerInfo.cfg', 'r') as file:
-        for line in file:
-            parts = line.split(' ')
-            peer_id_cfg = int(parts[0].strip())
-            host_name = parts[1].strip()
-            port_number = int(parts[2].strip())
-            has_file = parts[3].strip() == '1'
-            peer_info[peer_id_cfg] = (host_name, port_number, has_file)
-            os.makedirs(f'peer_{peer_id_cfg}', exist_ok=True)
-    
+    # with open('PeerInfo.cfg', 'r') as file:
+    #     for line in file:
+    #         parts = line.split(' ')
+    #         peer_id_cfg = int(parts[0].strip())
+    #         host_name = parts[1].strip()
+    #         port_number = int(parts[2].strip())
+    #         has_file = parts[3].strip() == '1'
+    #         peer_info[peer_id_cfg] = (host_name, port_number, has_file)
+    #         os.makedirs(f'peer_{peer_id_cfg}', exist_ok=True)
+    PeerInfo_init()
     # Calculate number of pieces
-    calculate_num_pieces()
+    #calculate_num_pieces()
     
     # Create peer instance
     peer = Peer(peer_id)
