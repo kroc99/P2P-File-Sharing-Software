@@ -1,0 +1,36 @@
+# cache files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# virtual environments
+venv/
+.venv/
+env/
+ENV/
+venv.win/
+venv_scripts/
+
+# editors and IDEs
+.vscode/
+.idea/
+
+# logs and runtime / peer data
+*.log
+peer_*/
+peer_*/**
+
+# test / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Packaging / build
+build/
+dist/
+*.egg-info/
+pip-wheel-metadata/
+
+# OS
+.DS_Store
+Thumbs.db
