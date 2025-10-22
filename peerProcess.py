@@ -156,7 +156,7 @@ class Peer:
         self.bitfield = Bitfield(NUM_PIECES, self.has_file)
         self.connections = {}  # Active connections
         
-        # Initialize log file
+        # Initialize log file 
         self.log_file = f"log_peer_{peer_id}.log"
         self.log("Peer process started")
         
@@ -168,7 +168,7 @@ class Peer:
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         with open(self.log_file, "a") as f:
             f.write(f"[{timestamp}]: {message}\n")
-        print(f"[{timestamp}]: {message}")
+        print(f"[{timestamp}]: {message}") #makes the time stamp show in console as well
     
     def start_server(self):
         """Start listening for incoming connections"""
