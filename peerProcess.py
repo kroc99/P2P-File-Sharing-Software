@@ -184,13 +184,31 @@ class Peer:
         
         self.log(f"Peer {self.peer_id} listening on {self.host_name}:{self.port_number}")
         return server_socket
+    
+    def send_request(self, peer_id, client_socket):
+        client_socket.send(create_request()) #need to request a certain piece
+        self.log(f"sent request message from {client_socket} to {peer_id}")
+        return 0
 
+    def handle_incoming_connections(self, server_socket):
+        #will need to use the choke and unchoke methodlogy here
+        if CHOKE:# something like this
+            server_socket.listen(3) # will need to come up with a number for this, will loop
+            #now connect to the connection port
+            peer_id = server_socket.accept()
+            #send the request message
+            self.send_request(peer_id) #need the client socket
+        return 0
+    #the every m seconds, PeerA will seleect the optimistic unchoked neighbor 
+    # (this can change very interval) among the choked neighbors but are interested in data, 
+    # will then send the unchoke message and expects a request message back
+    
 # TODO: Implement remaining Peer methods
 # def handle_incoming_connections(self, server_socket):
 # def handle_peer_connection(self, client_socket):
 # def handle_peer_messages(self, client_socket, peer_id):
 # def process_message(self, message_type, payload, peer_id, client_socket):
-# def send_request(self, peer_id, client_socket):
+# def send_request(self, peer_id, client_socket): - still needs work
 # def read_piece(self, piece_index):
 # def save_piece(self, piece_index, piece_data):
 # def connect_to_peers(self):
@@ -205,20 +223,7 @@ def peerProcess(peer_id):
 
     
     # Read configuration directly from Common.cfg
-    # with open('Common.cfg', 'r') as file:
-    #     for line in file:
-    #         if line.startswith('NumberOfPreferredNeighbors'):
-    #             NUMBER_OF_PREFERRED_NEIGHBORS = int(line.split(' ')[1].strip())
-    #         elif line.startswith('UnchokingInterval'):
-    #             UNCHOKING_INTERVAL = int(line.split(' ')[1].strip())
-    #         elif line.startswith('OptimisticUnchokingInterval'):
-    #             OPTIMISTIC_UNCHOKING_INTERVAL = int(line.split(' ')[1].strip())
-    #         elif line.startswith('FileName'):  
-    #             FILE_NAME = line.split(' ')[1].strip()
-    #         elif line.startswith('FileSize'):
-    #             FILE_SIZE = int(line.split(' ')[1].strip())
-    #         elif line.startswith('PieceSize'):
-    #             PIECE_SIZE = int(line.split(' ')[1].strip())
+    
     init_Common()
     # Read peer info directly from PeerInfo.cfg
     peer_info.clear()  # Clear any old data
