@@ -32,6 +32,8 @@ def init_Common():
                 FILE_SIZE = int(line.split(' ')[1].strip())
             elif line.startswith('PieceSize'):
                 PIECE_SIZE = int(line.split(' ')[1].strip())
+        
+        NUM_PIECES = math.ceil(FILE_SIZE/PIECE_SIZE) # to update the number of pieces
 
 def handshake(peer_id):
     # Create handshake message

@@ -238,6 +238,8 @@ def peerProcess(peer_id):
     
     # Start server
     server_socket = peer.start_server()
+    handshake_mess = handshake(peer_id)
+    peer.log(handshake_mess) # this writes the handshake to the log file
     
     # TODO: Implement remaining functionality
     # peer.connect_to_peers()
@@ -260,4 +262,4 @@ if __name__ == "__main__":
     
     peer_id = int(sys.argv[1])
     peerProcess(peer_id)
-    handshake(peer_id) #implementing the handshake function
+    #handshake(peer_id) dont think we need this here - implemented in peer_process
