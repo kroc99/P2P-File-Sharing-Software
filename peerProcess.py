@@ -183,6 +183,8 @@ class Peer:
         server_socket.listen(10)
         
         self.log(f"Peer {self.peer_id} listening on {self.host_name}:{self.port_number}")
+        #c, addr = server_socket.accept() 
+        #print(addr)
         return server_socket
     
     def send_request(self, peer_id, client_socket):
@@ -198,6 +200,17 @@ class Peer:
             peer_id = server_socket.accept()
             #send the request message
             self.send_request(peer_id) #need the client socket
+        return 0
+    
+    def connect_to_peers(self):# unsure if this one is for initial connections or just connections in general
+        if peer_id in peer_info:
+            for i in peer_info:
+                print(peer_info[i])
+                if peer_id != peer_info[i]:
+                    #we'd want to connect to this peer
+                    return
+                elif peer_id == peer_info[i]:
+                    break # cant connect to itself
         return 0
     #the every m seconds, PeerA will seleect the optimistic unchoked neighbor 
     # (this can change very interval) among the choked neighbors but are interested in data, 
@@ -230,14 +243,15 @@ def peerProcess(peer_id):
 
 
     PeerInfo_init() # use the function from the P2P file
-    # Calculate number of pieces
-    #calculate_num_pieces()
     
     # Create peer instance
     peer = Peer(peer_id)
     
     # Start server
     server_socket = peer.start_server()
+
+    #need to have a way to check if the peer_id passed in is the first one, second, etc so it knows who to connect to
+
     handshake_mess = handshake(peer_id)
     peer.log(handshake_mess) # this writes the handshake to the log file
     
@@ -260,6 +274,6 @@ if __name__ == "__main__":
         print("Usage: python peerProcess.py <peer_id>")
         sys.exit(1)
     
-    peer_id = int(sys.argv[1])
+    peer_id = int(sys.argv[1]) # reads in the peer id
     peerProcess(peer_id)
     #handshake(peer_id) dont think we need this here - implemented in peer_process
