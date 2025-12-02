@@ -252,7 +252,7 @@ class Peer:
         server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         server_socket.bind((self.host_name, self.port_number))
-        server_socket.listen(10)
+        server_socket.listen()
 
         self.log(f"Peer {self.peer_id} listening on {self.host_name}:{self.port_number}")
         return server_socket
@@ -264,6 +264,7 @@ class Peer:
         """
         while True:
             client_socket, addr = server_socket.accept()
+
 
             # Receive handshake first
             hs = self.recv_exact(client_socket, 32)
@@ -512,11 +513,12 @@ class Peer:
 
         for other_id in older_peers:
             host, port, _ = P2P_init.peer_info[other_id]
+            print(port)
             try:
                 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 sock.connect((host, port))
-
                 # Send handshake
+                
                 sock.sendall(handshake(self.peer_id))
 
                 # Receive handshake back
