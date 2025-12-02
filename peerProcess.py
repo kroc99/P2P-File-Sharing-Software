@@ -208,6 +208,7 @@ class Peer:
                 print(peer_info[i])
                 if peer_id != peer_info[i]:
                     #we'd want to connect to this peer
+                    self.log(f"Peer {self.peer_id} makes a connection to Peer {peer_info[i]}") # from specs
                     return
                 elif peer_id == peer_info[i]:
                     break # cant connect to itself
