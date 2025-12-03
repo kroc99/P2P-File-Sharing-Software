@@ -50,3 +50,22 @@ To run the test_p2p_unit file:
 - test_thefile_exists_and_readable
     * confirms "thefile" exists and is readable
     * checks that it contains at least 5 lines and file is not empty
+
+
+!!!!!!!
+Before final submission, you will need:
+
+1️⃣ A stop condition
+
+Peers currently run forever.
+Add this inside save_piece():
+
+if self.bitfield.is_complete():
+    # Check all peers also complete before termination (per project spec).
+
+
+But this can be added later.
+
+2️⃣ A log that exactly matches project format
+
+Your logs are extremely close — and acceptable.
