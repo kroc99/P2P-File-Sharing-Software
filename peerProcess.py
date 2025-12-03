@@ -480,24 +480,24 @@ class Peer:
             if not self.bitfield.has_piece(piece_index):
                 self.bitfield.set_piece(piece_index)
 
-            # Count how many pieces we now have
-            pieces_have = sum(1 for b in self.bitfield.bits if b)
+                    # Count how many pieces we now have
+                pieces_have = sum(1 for b in self.bitfield.bits if b)
 
-            # Log download
-            self.log(f"Peer {self.peer_id} has downloaded the piece {piece_index} from {from_peer_id}. "
-                     f"Now the number of pieces it has is {pieces_have}.")
+                # Log download
+                self.log(f"Peer {self.peer_id} has downloaded the piece {piece_index} from {from_peer_id}. "
+                        f"Now the number of pieces it has is {pieces_have}.")
 
-            # Send 'have' to all neighbors
-            have_msg = create_have(piece_index)
-            for nb_id, nb_state in self.connections.items():
-                try:
-                    nb_state['socket'].sendall(have_msg)
-                except:
-                    pass
+                # Send 'have' to all neighbors
+                have_msg = create_have(piece_index)
+                for nb_id, nb_state in self.connections.items():
+                    try:
+                        nb_state['socket'].sendall(have_msg)
+                    except:
+                        pass
 
-            # If file complete, log completion (and later: terminate)
-            if self.bitfield.is_complete():
-                self.log(f"Peer {self.peer_id} has downloaded the complete file.")
+                # If file complete, log completion (and later: terminate)
+                if self.bitfield.is_complete():
+                    self.log(f"Peer {self.peer_id} has downloaded the complete file.")
 
         except Exception as e:
             self.log(f"Error saving piece {piece_index}: {e}")

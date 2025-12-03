@@ -12,11 +12,6 @@ import sys
 def create_test_file():
     """Create a test file for sharing"""
     test_content = """This is a test file for the P2P file sharing system.
-It contains multiple lines of text to test the file sharing functionality.
-Each peer will download pieces of this file from other peers.
-This tests the choking/unchoking mechanism, piece exchange, and overall P2P functionality.
-The file should be distributed among peers using the BitTorrent-like protocol.
-Each peer will download pieces of this file from other peers until they have the complete file.
 This is line 8 of the test file.
 This is line 9 of the test file.
 This is line 10 of the test file.
@@ -153,7 +148,7 @@ def main():
     print("Press Ctrl+C to stop all peers.")
     
     try:
-        # Keep the script running
+        # Keep script running
         while True:
             time.sleep(1)
     except KeyboardInterrupt:
