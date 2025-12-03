@@ -677,6 +677,7 @@ def peerProcess(peer_id):
 
     # Read configuration directly from Common.cfg
     init_Common()
+    
 
     # Read peer info directly from PeerInfo.cfg
     PeerInfo_init()  # use the function from the P2P file

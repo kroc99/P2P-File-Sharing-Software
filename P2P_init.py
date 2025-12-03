@@ -46,6 +46,13 @@ def init_Common():
                 PIECE_SIZE = int(line.split()[1])
 
     NUM_PIECES = math.ceil(FILE_SIZE / PIECE_SIZE) # to update the number of pieces
+    print("Common info initialization: ",
+          NUMBER_OF_PREFERRED_NEIGHBORS, 
+          UNCHOKING_INTERVAL, 
+          OPTIMISTIC_UNCHOKING_INTERVAL,
+          FILE_NAME,
+          FILE_SIZE,
+          PIECE_SIZE)
 
 def handshake(peer_id):
     # Create handshake message
@@ -97,6 +104,8 @@ def PeerInfo_init():
             # print(peer_info[1001])          # used as a check
             # this makes the directory for each peer (only if it doesn't already exist)
             os.makedirs(f'peer_{peer_id}', exist_ok=True)
+        print("Peer info initialization: ", peer_info[1001],
+              peer_info[1003])
 
     # how to access a field:
     #   peer_info[1001][0] → hostname
