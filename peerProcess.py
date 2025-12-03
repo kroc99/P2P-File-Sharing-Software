@@ -677,7 +677,6 @@ def peerProcess(peer_id):
 
     # Read configuration directly from Common.cfg
     init_Common()
-    
 
     # Read peer info directly from PeerInfo.cfg
     PeerInfo_init()  # use the function from the P2P file
@@ -703,24 +702,31 @@ def peerProcess(peer_id):
     peer.start_choking_algorithm()
 
     try:
-        # Keep the main thread alive
-        while True:
+        # Keep the main thread alive until the peer decides to stop
+        while not peer.stopped:
             time.sleep(1)
     except KeyboardInterrupt:
-        peer.log("Peer process terminated")
-        server_socket.close()
+        peer.log("Peer process terminated by user.")
+        peer.stop()
+    finally:
+        # Extra safety: close sockets if anything is still open
+        if peer.server_socket is not None:
+            try:
+                peer.server_socket.close()
+            except:
+                pass
         for _, state in peer.connections.items():
             try:
                 state['socket'].close()
             except:
                 pass
+        peer.log("Peer process exiting.")
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:  # making sure that the command includes exactly the information needed.
+    if len(sys.argv) != 2:
         print("Usage: python peerProcess.py <peer_id>")
         sys.exit(1)
 
-    peer_id = int(sys.argv[1])  # reads in the peer id
+    peer_id = int(sys.argv[1])
     peerProcess(peer_id)
-    # handshake(peer_id) dont think we need this here - implemented in peer_process
