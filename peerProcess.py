@@ -28,6 +28,7 @@ HAVE = 4
 BITFIELD = 5
 REQUEST = 6
 PIECE = 7
+DONE = 8
 
 # Optional local helper (not strictly needed but kept)
 NUM_PIECES = 0
@@ -43,6 +44,9 @@ def create_message(message_type, payload=b''):
     """Create a message with length prefix."""
     length = len(payload)
     return struct.pack('>IB', length, message_type) + payload
+
+def create_done():
+    return create_message(DONE)
 
 def create_choke():
     return create_message(CHOKE)
@@ -166,6 +170,14 @@ class Peer:
         # Bitfield (seeder has full bitfield, leecher has empty)
         self.bitfield = Bitfield(P2P_init.NUM_PIECES, self.has_file)
 
+        # Global completion tracking
+        self.finished_peers = set()
+        if self.has_file:
+            self.finished_peers.add(peer_id)
+
+        self.total_peers = set(peer_info.keys())
+        self.done_broadcast_sent = False
+
         # Neighbors: peerID -> state dict
         # state = {
         #   'socket': socket,
@@ -265,6 +277,15 @@ class Peer:
                 state['socket'].close()
             except:
                 pass
+    
+    def broadcast_done(self):
+        msg = create_done()
+        for pid, st in self.connections.items():
+            try:
+                st['socket'].sendall(msg)
+            except:
+                pass
+        self.log("Broadcasted DONE to neighbors.")
 
     def handle_incoming_connections(self, server_socket):
         """
@@ -365,6 +386,14 @@ class Peer:
         neighbor = self.connections.get(peer_id)
         if neighbor is None:
             # Should not happen
+            return
+
+        if message_type == DONE:
+            self.log(f"Received DONE from Peer {peer_id}")
+            self.finished_peers.add(peer_id)
+            if self.finished_peers == self.total_peers:
+                self.log("All peers have completed the file. Stopping.")
+                self.stop()
             return
 
         if message_type == BITFIELD:
@@ -513,11 +542,17 @@ class Peer:
                     except:
                         pass
 
-                # If file complete, log completion and stop this peer
-                if self.bitfield.is_complete() and not self.has_file:
-                    self.log(f"Peer {self.peer_id} has downloaded the complete file.")
-                    # Mark this peer as stopped; main loop will clean up
-                    self.stop()
+                # If we just completed the file, broadcast DONE once
+                if self.bitfield.is_complete() and not self.done_broadcast_sent:
+                    self.log("File complete. Broadcasting DONE.")
+                    self.done_broadcast_sent = True
+                    self.finished_peers.add(self.peer_id)
+                    self.broadcast_done()
+
+                    # If all peers already finished, stop immediately
+                    if self.finished_peers == self.total_peers:
+                        self.log("All peers complete — stopping.")
+                        self.stop()
 
         except Exception as e:
             self.log(f"Error saving piece {piece_index}: {e}")
