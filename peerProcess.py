@@ -476,6 +476,7 @@ class Peer:
                 f.seek(offset)
                 f.write(piece_data)
 
+
             # Update bitfield
             if not self.bitfield.has_piece(piece_index):
                 self.bitfield.set_piece(piece_index)
@@ -520,6 +521,7 @@ class Peer:
                 # Send handshake
                 
                 sock.sendall(handshake(self.peer_id))
+                print(self.bitfield)
 
                 # Receive handshake back
                 hs = self.recv_exact(sock, 32)
