@@ -29,27 +29,18 @@ BITFIELD = 5
 REQUEST = 6
 PIECE = 7
 
-# Global variables (local helpers only)
+# Optional local helper (not strictly needed but kept)
 NUM_PIECES = 0
 
-# Configuration variables (will be set by init_Common)
-NUMBER_OF_PREFERRED_NEIGHBORS = 0
-UNCHOKING_INTERVAL = 0
-OPTIMISTIC_UNCHOKING_INTERVAL = 0
-FILE_NAME = ""
-FILE_SIZE = 0
-PIECE_SIZE = 0
-
-# need to call the handshake initiatlizer in the P2P file
-# plan on using the actual mes function from P2P as well 
 def calculate_num_pieces():
-    """Calculate number of pieces based on file size and piece size"""
-    global NUM_PIECES, FILE_SIZE, PIECE_SIZE
-    NUM_PIECES = math.ceil(FILE_SIZE / PIECE_SIZE)
+    """Calculate number of pieces based on file size and piece size."""
+    global NUM_PIECES
+    NUM_PIECES = math.ceil(P2P_init.FILE_SIZE / P2P_init.PIECE_SIZE)
     return NUM_PIECES
 
+
 def create_message(message_type, payload=b''):
-    """Create a message with length prefix"""
+    """Create a message with length prefix."""
     length = len(payload)
     return struct.pack('>IB', length, message_type) + payload
 
@@ -81,7 +72,7 @@ def create_piece(piece_index, piece_data):
     return create_message(PIECE, payload)
 
 def parse_message(data):
-    """Parse message and return (message_type, payload)"""
+    """Parse message and return (message_type, payload)."""
     if len(data) < 5:
         return None, None
     
@@ -92,23 +83,17 @@ def parse_message(data):
     return message_type, payload
 
 def parse_handshake(data):
-    """Parse handshake message and return peer_id"""
+    """Parse handshake message and return peer_id."""
     if len(data) != 32:
         return None
     
-    pstr = data[:18].decode('utf-8')
+    pstr = data[:18].decode('utf-8', errors='ignore')
     if pstr != "P2PFILESHARINGPROJ":
         return None
     
     peer_id = int.from_bytes(data[28:32], byteorder='big')
     return peer_id
 
-# TODO: Implement remaining message creation functions
-# def create_not_interested():
-# def create_have(piece_index):
-# def create_bitfield(bitfield_bytes):
-# def create_request(piece_index):
-# def create_piece(piece_index, piece_data):
 
 class Bitfield:
     def __init__(self, num_pieces, has_file=False):
@@ -145,9 +130,8 @@ class Bitfield:
                 self.bits[i] = bool(data[byte_index] & (1 << bit_index))
     
     def is_complete(self):
-        return all(self.bits) 
+        return all(self.bits)
 
-    # DONE def has_interesting_pieces(self, other_bitfield):
     def has_interesting_pieces(self, other_bitfield):
         """True if neighbor has pieces we don't have."""
         for i in range(self.num_pieces):
@@ -155,7 +139,6 @@ class Bitfield:
                 return True
         return False
 
-    # DONE def get_missing_pieces(self, other_bitfield):
     def get_missing_pieces(self, other_bitfield):
         """Return a list of indices that neighbor has and we don't."""
         missing = []
@@ -169,6 +152,10 @@ class Peer:
     def __init__(self, peer_id):
         self.peer_id = peer_id
 
+        # STOP FLAGS & SERVER HANDLE
+        self.stopped = False          # main loop exit flag
+        self.server_socket = None     # gets set in start_server()
+
         if peer_id not in peer_info:
             print(f"Peer ID {peer_id} not found in PeerInfo.cfg")
             sys.exit(1)
@@ -176,20 +163,19 @@ class Peer:
         # Load peer info
         self.host_name, self.port_number, self.has_file = peer_info[peer_id]
 
-        # Bitfield
+        # Bitfield (seeder has full bitfield, leecher has empty)
         self.bitfield = Bitfield(P2P_init.NUM_PIECES, self.has_file)
 
-        # Dictionary of peerID -> neighbor_state
-        # neighbor_state = {
+        # Neighbors: peerID -> state dict
+        # state = {
         #   'socket': socket,
-        #   'bitfield': Bitfield(...),
+        #   'bitfield': Bitfield,
         #   'am_choking': bool,
         #   'peer_choking_me': bool,
         #   'interested_in_me': bool,
         #   'im_interested_in_them': bool,
         #   'downloaded_bytes_interval': int
         # }
-        # Neighbors
         self.connections = {}
         self.preferred_neighbors = set()
         self.optimistic_neighbor = None
@@ -204,8 +190,12 @@ class Peer:
         # File path
         self.file_path = os.path.join(f"peer_{peer_id}", P2P_init.FILE_NAME)
 
-        # THIS MUST COME AFTER log_file SETUP
+        # Ensure storage exists
         self._init_file_storage()
+
+        # If this peer starts with full file, you *could* log completion here
+        if self.bitfield.is_complete() and self.has_file:
+            self.log(f"Peer {self.peer_id} starts with the complete file.")
 
     def _init_file_storage(self):
         """
@@ -228,11 +218,11 @@ class Peer:
                         f.write(b'\0')
 
     def log(self, message):
-        """Write log message with timestamp"""
-        timestamp = datetime.now().strftime("%H:%M:%S")  # fixed getting only the time
+        """Write log message with timestamp."""
+        timestamp = datetime.now().strftime("%H:%M:%S")
         with open(self.log_file, "a") as f:
             f.write(f"[{timestamp}]: {message}\n")
-        print(f"[{timestamp}]: {message}")  # makes the time stamp show in console as well
+        print(f"[{timestamp}]: {message}")
 
     def recv_exact(self, sock, num_bytes):
         """Receive exactly num_bytes from the socket."""
@@ -244,30 +234,57 @@ class Peer:
             data += chunk
         return data
 
-    # -------------------------
-    # Server side
-    # -------------------------
+
     def start_server(self):
-        """Start listening for incoming connections"""
+        """Start listening for incoming connections."""
         server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         server_socket.bind((self.host_name, self.port_number))
         server_socket.listen()
 
+        self.server_socket = server_socket
+
         self.log(f"Peer {self.peer_id} listening on {self.host_name}:{self.port_number}")
         return server_socket
+
+    def stop(self):
+        """Gracefully stop this peer."""
+        if self.stopped:
+            return
+        self.stopped = True
+        self.log(f"Peer {self.peer_id} shutting down.")
+
+        try:
+            if self.server_socket:
+                self.server_socket.close()
+        except:
+            pass
+
+        for _, state in list(self.connections.items()):
+            try:
+                state['socket'].close()
+            except:
+                pass
 
     def handle_incoming_connections(self, server_socket):
         """
         Accept incoming connections in a loop, perform handshake,
         create neighbor state, then spawn message handler threads.
         """
-        while True:
-            client_socket, addr = server_socket.accept()
-
+        while not self.stopped:
+            try:
+                client_socket, addr = server_socket.accept()
+            except OSError:
+                # Socket closed while stopping
+                break
 
             # Receive handshake first
-            hs = self.recv_exact(client_socket, 32)
+            try:
+                hs = self.recv_exact(client_socket, 32)
+            except ConnectionError:
+                client_socket.close()
+                continue
+
             remote_id = parse_handshake(hs)
             if remote_id is None:
                 self.log(f"Received invalid handshake from {addr}, closing.")
@@ -304,9 +321,6 @@ class Peer:
             )
             t.start()
 
-    # -------------------------
-    # Peer connection + message handling
-    # -------------------------
     def handle_peer_connection(self, client_socket, peer_id):
         """
         Handle messages from a single peer in a loop.
@@ -327,7 +341,7 @@ class Peer:
         """
         Continuously read messages: length (4 bytes) + type (1 byte) + payload.
         """
-        while True:
+        while not self.stopped:
             # Read length (payload length, not including type)
             header = self.recv_exact(client_socket, 4)
             length = struct.unpack('>I', header)[0]
@@ -399,7 +413,6 @@ class Peer:
             if piece_data is not None:
                 msg = create_piece(piece_index, piece_data)
                 client_socket.sendall(msg)
-            # If we don't have it, ignore (should not happen if bitfields are correct)
 
         elif message_type == PIECE:
             # We got a piece from neighbor
@@ -429,6 +442,10 @@ class Peer:
         - we don't have
         - the neighbor (peer_id) does have
         """
+        # If this peer is already complete, don't request anything
+        if self.bitfield.is_complete():
+            return
+
         neighbor = self.connections.get(peer_id)
         if neighbor is None:
             return
@@ -478,15 +495,16 @@ class Peer:
 
 
             # Update bitfield
-            if not self.bitfield.has_piece(piece_index):
+            new_piece = not self.bitfield.has_piece(piece_index)
+            if new_piece:
                 self.bitfield.set_piece(piece_index)
 
-                    # Count how many pieces we now have
+                # Count how many pieces we now have
                 pieces_have = sum(1 for b in self.bitfield.bits if b)
 
                 # Log download
                 self.log(f"Peer {self.peer_id} has downloaded the piece {piece_index} from {from_peer_id}. "
-                        f"Now the number of pieces it has is {pieces_have}.")
+                         f"Now the number of pieces it has is {pieces_have}.")
 
                 # Send 'have' to all neighbors
                 have_msg = create_have(piece_index)
@@ -496,9 +514,11 @@ class Peer:
                     except:
                         pass
 
-                # If file complete, log completion (and later: terminate)
-                if self.bitfield.is_complete():
+                # If file complete, log completion and stop this peer
+                if self.bitfield.is_complete() and not self.has_file:
                     self.log(f"Peer {self.peer_id} has downloaded the complete file.")
+                    # Mark this peer as stopped; main loop will clean up
+                    self.stop()
 
         except Exception as e:
             self.log(f"Error saving piece {piece_index}: {e}")
@@ -514,12 +534,11 @@ class Peer:
 
         for other_id in older_peers:
             host, port, _ = P2P_init.peer_info[other_id]
-            print(port)
             try:
                 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 sock.connect((host, port))
+
                 # Send handshake
-                
                 sock.sendall(handshake(self.peer_id))
                 print(self.bitfield)
 
@@ -575,13 +594,17 @@ class Peer:
         t2.start()
 
     def _preferred_neighbors_loop(self):
-        while True:
+        while not self.stopped:
             time.sleep(P2P_init.UNCHOKING_INTERVAL)
+            if self.stopped:
+                break
             self.update_preferred_neighbors()
 
     def _optimistic_unchoke_loop(self):
-        while True:
+        while not self.stopped:
             time.sleep(P2P_init.OPTIMISTIC_UNCHOKING_INTERVAL)
+            if self.stopped:
+                break
             self.update_optimistic_neighbor()
 
     def update_preferred_neighbors(self):
@@ -647,8 +670,8 @@ class Peer:
 
     def update_optimistic_neighbor(self):
         """
-        Every m seconds, randomly select one interested but choked neighbor as the optimistic
-        unchoked neighbor.
+        Every m seconds, randomly select one interested but choked neighbor as the
+        optimistic unchoked neighbor.
         """
         # candidates: interested in me, currently choked by me, not already preferred
         candidates = [
@@ -675,14 +698,13 @@ class Peer:
 
 
 def peerProcess(peer_id):
-    """Main peer process function"""
+    """Main peer process function."""
 
     # Read configuration directly from Common.cfg
     init_Common()
-    
 
     # Read peer info directly from PeerInfo.cfg
-    PeerInfo_init()  # use the function from the P2P file
+    PeerInfo_init()
 
     # Create peer instance
     peer = Peer(peer_id)
@@ -705,24 +727,30 @@ def peerProcess(peer_id):
     peer.start_choking_algorithm()
 
     try:
-        # Keep the main thread alive
-        while True:
+        # Keep the main thread alive until the peer decides to stop
+        while not peer.stopped:
             time.sleep(1)
     except KeyboardInterrupt:
-        peer.log("Peer process terminated")
-        server_socket.close()
+        peer.log("Peer process terminated by user.")
+        peer.stop()
+    finally:
+        # Extra safety: close sockets if anything is still open
+        if peer.server_socket is not None:
+            try:
+                peer.server_socket.close()
+            except:
+                pass
         for _, state in peer.connections.items():
             try:
                 state['socket'].close()
             except:
                 pass
-
+        peer.log("Peer process exiting.")
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:  # making sure that the command includes exactly the information needed.
+    if len(sys.argv) != 2:
         print("Usage: python peerProcess.py <peer_id>")
         sys.exit(1)
 
-    peer_id = int(sys.argv[1])  # reads in the peer id
+    peer_id = int(sys.argv[1])
     peerProcess(peer_id)
-    # handshake(peer_id) dont think we need this here - implemented in peer_process
