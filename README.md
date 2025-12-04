@@ -7,9 +7,10 @@ We tested in the video on a personal hotspot as we ran into issue testing on uf 
 
 You will notice that we printed out the common.cfg and PeerInfo.cfg variables inthe beginning alomg with the bitfield message in the terminal but it cannot be found in the log as these are things that normally not printed in the peer log. We do have messages in place that run after those functions have executed but not an explicit message.
 
-We ran python peerProcess.py 1002 or other everytime and that is what started our connection. 
+We ran python peerProcess.py 1002 or other everytime and that is what started our connection. We did this from the P2P-File-Sharing directory which included all the test files, peerProcess.py, where our log files were stored upon compilation, peer directories, and the Common and PeerInfo files. 
 
-Github link: (we worked off the main branch as that should be the most up to date)
+Github link: https://github.com/kroc99/P2P-File-Sharing-Software.git 
+(we worked off the main branch as that should be the most up to date)
 
 Group Members:
 
@@ -19,6 +20,6 @@ Contributions:
 
 Savannah: Worked on the initial set up and worked on the planning of meetings and deadlines needed to be met. Worked on the README file and worked on the P2P_init.py file. After file implementation, she worked on debugging and meeting rubric criteria with logging statements. She also created the video and submitted the project ensuring full submission occured. 
 
-Kristian: Worked on the initial class structures for Peer and Bitfield. He also fixed logging and test result bugs and helped in the creation of the test case code.
+Kristian: Worked on the initial class structures for Peer and Bitfield. He also fixed logging and test result bugs and helped in the creation of the test case code. Worked on the collaboration of the final video as well. 
 
-Giovanni: Worked on main functionality of a lot of the functions in Peer and remaining functions in Bitfield. He also worked on the creation of the test cases that we could run. In addition to that, he helped with logic understanding and functionality
+Giovanni: Worked on main functionality of a lot of the functions in Peer and remaining functions in Bitfield. He also worked on the creation of the test cases that we could run. In addition to that, he helped with logic understanding and functionality, along with some debugging.
