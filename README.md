@@ -12,7 +12,10 @@ We ran python peerProcess.py 1002 or other everytime and that is what started ou
 Github link: https://github.com/kroc99/P2P-File-Sharing-Software.git 
 (we worked off the main branch as that should be the most up to date)
 
-Group Members:
+We included a link to a youtube link of our unlisted video demo incase the submission does not work in the comments of the submission
+
+
+Group Members (group 69):
 
 Savannah Ogletree, Kristian O'Connor, and Giovanni Sanchez
 
