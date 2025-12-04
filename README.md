@@ -9,7 +9,7 @@ You will notice that we printed out the common.cfg and PeerInfo.cfg variables in
 
 We ran python peerProcess.py 1002 or other everytime and that is what started our connection. 
 
-Github link: 
+Github link: (we worked off the main branch as that should be the most up to date)
 
 Group Members:
 
